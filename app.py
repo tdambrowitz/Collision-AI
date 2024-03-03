@@ -986,26 +986,20 @@ def display_page():
 
 
 
-# Logic for password checking
 def check_password():
-    if not st.session_state.is_authenticated:
+    # Initialize 'is_authenticated' in session state if not already present
+    if 'is_authenticated' not in st.session_state:
+        st.session_state['is_authenticated'] = False
+
+    if not st.session_state['is_authenticated']:
         password = st.text_input("Enter Password:", type="password")
 
-
-            
-        
-        #if password == os.environ.get("db_password"):
-        if password == "AI":
-            st.session_state.is_authenticated = True
+        if password == "AI":  # Replace this with your actual password check
+            st.session_state['is_authenticated'] = True
             st.rerun()
         elif password:
-            st.write("Please enter the correct password to proceed.")
-            
-        st.header("Welcome to Collision AI.")
-
-
+            st.warning("Please enter the correct password to proceed.")
     else:
-        print("Access granted, welcome to the app.")
         display_page()
 
 
