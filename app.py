@@ -592,11 +592,10 @@ def display_page():
                     data = json.loads(json_data)
                     
                 except json.JSONDecodeError as e:
-                    st.write(f"Failed to decode JSON: {e}")
+                    print(f"Failed to decode JSON: {e}")
 
 
                     #If Repair plan wasnt good JSON then try again
-
 
                     repair_plan = send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key)
                     # Remove any non-JSON compliant parts from the string (like Python comments)
