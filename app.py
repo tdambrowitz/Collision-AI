@@ -590,7 +590,7 @@ def display_page():
                 try:
                     # Parse the JSON data
                     data = json.loads(json_data)
-                    st.write(data)
+                    
                 except json.JSONDecodeError as e:
                     st.write(f"Failed to decode JSON: {e}")
 
@@ -612,7 +612,7 @@ def display_page():
 
                     # Parse the JSON data
                     data = json.loads(json_data)
-                    st.write(data)
+                    
 
 
                 job_card = f"Digital Job Card for Vehicle: {data['reg_no']}\n\n"
