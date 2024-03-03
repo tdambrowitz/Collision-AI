@@ -78,10 +78,10 @@ def display_page():
     FNOL_description = st.sidebar.text_area("First Notification of Loss Description", value=st.session_state.get('FNOL_description', ''))
 
     # Image upload
-    user_images = st.sidebar.file_uploader("Upload Damage Images", accept_multiple_files=True, type=['png', 'jpg', 'jpeg'], key="user_images")
+    uploaded_images = st.sidebar.file_uploader("Upload Damage Images", accept_multiple_files=True, type=['png', 'jpg', 'jpeg'], key="uploaded_images")
 
-    if user_images:
-        st.session_state['user_images'] = user_images  # Store user-uploaded images in session state
+    if uploaded_images:
+        st.session_state['user_images'] = uploaded_images  # Store user-uploaded images in session state
 
     # Display images (user-uploaded or example)
     images = st.session_state.get('user_images', []) or st.session_state.get('example_images', [])
