@@ -7,9 +7,9 @@ import streamlit as st
 from PIL import Image, ExifTags
 import math
 
+# Environment Variables
 openai_api_key = os.environ.get("OPENAI_API_KEY")
 vehicle_data_api_key = os.environ.get("VEHICLE_DATA_API_KEY")
-
 
 # Streamlit Configuration
 st.set_page_config(
@@ -18,10 +18,9 @@ st.set_page_config(
     layout="wide"
 )
 
+# Streamlit Page
 def display_page():
 
-
-    # Streamlit page setup
     st.sidebar.header('Vehicle Damage Upload')
 
     # Image upload
@@ -62,10 +61,7 @@ def display_page():
     if st.sidebar.button("Process Images"):
         if images and vehicle_reg and FNOL_description:
 
-
             # Replacement costs used to approximate repair costs, ideally we would use an API connection with parts suppliers
-
-
             replacement_costs = {
                 'Side Mirror': 300,
                 'Bonnet': 1000,
@@ -104,7 +100,6 @@ def display_page():
                 'road test': 100,
                 'diagnostic trouble code': 100,
             }
-
 
             # Used for the one-shot prompt to GPT-4 for repair plan creation
             json_example = """
@@ -230,7 +225,6 @@ def display_page():
 
             """
 
-
             #encode images to base64 for GPT-4-Vision
             def encode_image(image_input):
                 # Check if the input is a file path (string) and the file exists
@@ -247,7 +241,7 @@ def display_page():
                     return base64.b64encode(buffered.getvalue()).decode('utf-8')
                 else:
                     raise ValueError("Unsupported input type for image encoding")
-
+                
             # Function to scale the costs based on the TradeRetail value, ideally we would use an API connection with parts suppliers
             def scale_costs(trade_retail_value, replacement_costs, scaling_base=4000, slow_scale_factor=0.02):
                 trade_retail_value = float(trade_retail_value)  # Convert TradeRetail value to a number
@@ -263,14 +257,8 @@ def display_page():
                 scaled_costs = {item: cost * scale_factor for item, cost in replacement_costs.items()}
                 return scaled_costs
 
-
-
             # Data Packages are "ValuationData" or "VehicleData", this function fetches the data from the UK Vehicle Data API
-
             def fetch_and_save_data(VRM, DataPackage):
-                # Set Variables
-                
-
                 # Create payload dictionary
                 Payload = {
                     "v": 2,  # Package version
@@ -286,15 +274,6 @@ def display_page():
                 if r.status_code == requests.codes.ok:
                     # Response JSON Object
                     ResponseJSON = r.json()
-
-                    # Define the filename with .txt extension
-                    #filename = f"response_output_{VRM}_{DataPackage}.txt"
-
-                    # Writing the response to a .txt file
-                    #with open(filename, "w") as file:
-                        #json.dump(ResponseJSON, file, indent=4)
-
-                    #print(f"Response saved to {filename}")
 
                     # Extract specific details if DataPackage is ValuationData
                     if DataPackage == "ValuationData":
@@ -331,13 +310,8 @@ def display_page():
                     ErrorContent = f'Status Code: {r.status_code}, Reason: {r.reason}'
                     print(ErrorContent)
 
-
             # Function to send images to GPT-4-Vision
             def send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key):
-                #print(images)
-                #print(system_prompt)
-                #print(user_prompt)
-                #print(openai_api_key)
 
                 headers = {
                     "Content-Type": "application/json",
@@ -374,12 +348,10 @@ def display_page():
                 responses = []
 
                 response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=payload)
-                #print(response)
 
                 if response.status_code == 200:
                     # Append successful response to the list
                     responses.append(response.json()['choices'][0]['message']['content'])
-                    #print(response.json()['choices'][0]['message']['content'])
                     return response.json()['choices'][0]['message']['content']
                 else:
                     print("Failed to process the image")
@@ -415,29 +387,20 @@ def display_page():
                 }
 
                 response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=payload)
-                #print(response)
-
+                
                 if response.status_code == 200:
-                    # Append successful response to the list
-                    
-                    #print(response.json()['choices'][0]['message']['content'])
                     return response.json()['choices'][0]['message']['content']
                 else:
                     print("Failed to process the image")
                     return {"error": f"Request failed with status code {response.status_code}"}
 
-            # Example usage of the function
-
-            #vehicle_reg = "WN17HLD"
 
             with st.spinner('Fetching Vehicle Valuation...'):
                 valuation_data_response = fetch_and_save_data(vehicle_reg, "ValuationData")
 
-            
-            #st.write(valuation_data_response)
-            trade_retail = valuation_data_response["TradeRetail"]
-            scaled_costs = scale_costs(trade_retail, replacement_costs)
-            print(scaled_costs)
+                trade_retail = valuation_data_response["TradeRetail"]
+                scaled_costs = scale_costs(trade_retail, replacement_costs)
+                print(scaled_costs)
 
 
 
@@ -454,10 +417,12 @@ def display_page():
 
             example_images = ""
 
-            #make_model = "Vauxhall Mokka"
 
-            #Time for vision module number one!
 
+            #Time for the cool stuff!
+
+
+            #First we need to determine the damage location
             system_prompt = f"""You are assisting and Accident Repair group by identifying the damage location on vehicles.
             You will be shown various images of a {make_model}, you must determine whether the overall damage is located at the front or rear of the vehicle.
 
@@ -486,6 +451,8 @@ def display_page():
                 damage_location_part1 = send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key)
                 print(damage_location_part1)
 
+
+                #Turning GPT-4 weakness into a strength! Its terrible at lefts and right so I just let it do its thing and use some logic to correct if needed
                 if front_rear == "Front":
                     system_prompt = f"""You are assisting and Accident Repair group by identifying the damage location on vehicles.
                     You will be shown various images of a {make_model}, you must determine if images exist for both the front and rear of the vehicle.
@@ -520,10 +487,7 @@ def display_page():
 
 
 
-            #now check against the damage location
-
-
-            #FNOL_description = """Damage Description - PH collided with rear of TPV on roundabout. Airbags deployed."""
+            #Now that we know where the damage is in the photos we need to compare it to the claim and vehicle details to check for fraud
 
             example_images = ""
 
@@ -544,31 +508,26 @@ def display_page():
             with st.spinner('Checking for Fraudulent Activity...'):
                 response = send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key)
 
-
-
-                #print(response)
-
                 system_prompt = "You must parse the input you are provided and return valid json with no backticks or markdown."
                 user_prompt = f"Provide the raw json for the following: {response}"
 
-                #st.header("Now for the json parsing")
                 model = "gpt-3.5-turbo-0125"
                 good_json = gpt_turbo_chat(model, system_prompt, user_prompt, openai_api_key)
-                #print(good_json)
+                
 
                 # Check if good_json is not None and is a non-empty string
                 if good_json:
                     try:
                         # Parse the JSON string into a Python dictionary
                         parsed_json = json.loads(good_json)
-                        #st.write(parsed_json)
+                        
 
                         # Now you can check if 'fraudulent' is True (Python's False since it's 'false' in the JSON) and print the description
                         if parsed_json.get('fraudulent', False):
                             st.write(f"⚠️ Fraud detected: {parsed_json['Description']}")
                         else:
                             st.write("✅ No fraud detected")
-                            #print(parsed_json['Description'])
+                            
                     except json.JSONDecodeError as e:
                         st.write(f"Failed to decode JSON: {e}")
                 else:
@@ -576,7 +535,7 @@ def display_page():
 
 
 
-            #now for the repair plan
+            #Fraud checks are all done, now we need to create the repair plan
 
 
             formatted_context = f"""
@@ -584,13 +543,6 @@ def display_page():
                         {FNOL_description}\n
                         "It is vital that you consider this information when creating your repair plan. Keep in mind that this may not be all the information you need to create a repair plan, so examine the images carefully."
                     """
-
-
-
-
-
-
-
 
             system_prompt = """
             You are an expert vehicle damage assessor working with team members at Halo ARC Ltd to create a repair plan for a vehicle that has been involved in an accident.
@@ -623,9 +575,7 @@ def display_page():
 
             with st.spinner('Creating Repair Plan...'):
                 repair_plan = send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key)
-                st.write(repair_plan)
-                #st.write(repair_plan)
-                
+                             
                 # Remove any non-JSON compliant parts from the string (like Python comments)
                 json_data = repair_plan.split('\n')
                 json_data = [line for line in json_data if not line.strip().startswith('//')]
@@ -636,7 +586,6 @@ def display_page():
 
                 if json_data.startswith('json'):
                     json_data = json_data[4:]  # Remove the first 4 characters 'json'
-                st.write(json_data)
 
                 try:
                     # Parse the JSON data
@@ -644,6 +593,27 @@ def display_page():
                     st.write(data)
                 except json.JSONDecodeError as e:
                     st.write(f"Failed to decode JSON: {e}")
+
+
+                    #If Repair plan wasnt good JSON then try again
+
+
+                    repair_plan = send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key)
+                    # Remove any non-JSON compliant parts from the string (like Python comments)
+                    json_data = repair_plan.split('\n')
+                    json_data = [line for line in json_data if not line.strip().startswith('//')]
+                    json_data = "\n".join(json_data)
+
+                    # Remove any leading 'json' keyword and strip any remaining whitespace or special characters
+                    json_data = json_data.strip('` \n')
+
+                    if json_data.startswith('json'):
+                        json_data = json_data[4:]  # Remove the first 4 characters 'json'
+
+                    # Parse the JSON data
+                    data = json.loads(json_data)
+                    st.write(data)
+
 
                 job_card = f"Digital Job Card for Vehicle: {data['reg_no']}\n\n"
 
@@ -687,18 +657,17 @@ def display_page():
 
 
 
-            #now to calculate the cost of the repair
+            #Repair plan is done, now to calculate the cost
+                
 
             system_prompt = "You must use the dictionary and repair plan to create the overall cost of the repair. Take your time and work through the problem to ensure you have the coorect cost."
             user_prompt = f"Provide the overall cost for the following repair plan: {repair_plan}\n Here is the dictionary of costs: {scaled_costs}. You must only use the full cost for replacement parts, if a part is repaired you should use half of the dictionary cost."
 
-            #st.header("Now to get the costs together")
             model = "gpt-4-turbo-preview"
             
             with st.spinner('Calculating Repair Costs...'):
                 costs = gpt_turbo_chat(model, system_prompt, user_prompt, openai_api_key)
-                #st.write(costs)
-
+                
 
                 #Now to extract the cost from the response
 
@@ -714,7 +683,6 @@ def display_page():
 
 
             #Now for the Drivability check
-
 
             example_images = ""
 
@@ -759,24 +727,22 @@ def display_page():
             Using this and the images you have been provided evaluate the drivability of the vehicle and provide your response as JSON.
             """
 
-            #st.header("Now to determine drivability")
+            
 
             with st.spinner('Assessing Drivability...'):
                 drivability_output = send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key)
-                #st.write(drivability_output)
-
+                
 
 
                 #now turn the output into valid json
 
-
                 system_prompt = "You must parse the input you are provided and return valid json with no backticks or markdown."
                 user_prompt = f"Provide the raw json for the following: {drivability_output}"
 
-                #st.header("Now to make the drivability valid JSON")
+                
                 model = "gpt-3.5-turbo-0125"
                 good_drivability = gpt_turbo_chat(model, system_prompt, user_prompt, openai_api_key)
-                #st.write(good_drivability)
+                
 
                 # Check if good_drivability is not None and is a non-empty string
                 if good_drivability:
@@ -796,10 +762,10 @@ def display_page():
                 else:
                     st.write("Failed to get a valid response or good_drivability is None or an empty string")
 
+                st.write("")
 
-
-
-            st.write("")
+            
+            #Now for the Triage and Allocation
             system_prompt = f"""
             You are an expert vehicle damage assessor working with team members at Halo ARC Ltd to triage a vehicle that has been involved in an accident.
             You will be given a description of the damage and a repair plan as well as images of the vehicle. Your task is to determine if the vehicle should be sent to a spoke site, a hub site, or escalated for a total loss assessment.
@@ -841,7 +807,7 @@ def display_page():
             """
             
 
-            #st.header("Now to traige and allocate the vehicle")
+            
             with st.spinner('Triaging and Allocating...'):
                 triage = send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key)
                 
@@ -854,7 +820,7 @@ def display_page():
 
                 model = "gpt-3.5-turbo-0125"
                 triage_decision = gpt_turbo_chat(model, system_prompt, user_prompt, openai_api_key)
-                #st.write(good_drivability)
+                
 
                 # Check the decision and display the appropriate message
                 try:
@@ -878,6 +844,9 @@ def display_page():
                 triage_short = gpt_turbo_chat(model, system_prompt, user_prompt, openai_api_key)
                 st.write(triage_short)
                 st.write("")
+
+
+            #All done! Now time for shameless self promotion :D
 
             # Path to the Halo ARC Logo
             haloarc_logo_path = 'cropped_image_wider.jpg'  # Update this to the path where your QR code image is stored
@@ -918,4 +887,4 @@ def display_page():
 
 
 if __name__ == "__main__":
-    display_page()  # Start with the authentication check
+    display_page()  # If thing then do the thing
