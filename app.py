@@ -22,7 +22,6 @@ def display_page():
 
 
     # Streamlit page setup
-    #st.title('Collision Repair Management')
     st.sidebar.header('Vehicle Damage Upload')
 
     # Image upload
@@ -64,45 +63,40 @@ def display_page():
         if images and vehicle_reg and FNOL_description:
 
 
+            # Replacement costs used to approximate repair costs, ideally we would use an API connection with parts suppliers
 
-
-
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {openai_api_key}"
-            }
 
             replacement_costs = {
-                'Side Mirror': 300,  # Varies from $50 for basic to $500+ for advanced features like blind spot detection
-                'Bonnet': 1000,  # Large part, cost varies with material and design
-                'Door Glass': 200,  # Depends on vehicle model and glass type
-                'Door Handle': 200,  # Varies with electronic locks or keyless entry systems
-                'Exhaust': 500,  # Basic exhaust parts, more for full systems or performance parts
-                'Front Bumper': 600,  # Can vary widely with sensors and design
-                'Front Door': 800,  # Includes the cost of painting and labor
-                'Headlamp': 400,  # Varies with technology (halogen, LED, HID)
-                'Lower Grille': 150,  # Depends on design and material
-                'Number Plate': 20,  # Basic plate, exclusive of registration fees
-                'PDC Sensor': 150,  # Parking Distance Control sensors, vary with technology
-                'Quarter Panel': 1500,  # Large structural component, cost varies with vehicle and repair complexity
-                'Rear Bumper': 500,  # Similar to front bumper, can vary with integrated technology
-                'Rear Door': 800,  # Similar to front door, includes cost of painting and labor
-                'Rear Emblem': 50,  # Small part but can be more for luxury brands
-                'Rear Glass': 300,  # Depends on defrosting capabilities and vehicle model
-                'Rear Inner Lamp': 150,  # Depends on design and technology
-                'Rear Outer Lamp': 200,  # Tail lights, can vary with LED or other technologies
-                'Rear Reflector': 50,  # Basic component, but can vary with design
-                'Sill Panel': 600,  # Bodywork part, cost varies with material and design
-                'Tailgate': 800,  # Large component, includes cost of painting and labor
-                'Tailgate Spoiler': 200,  # Aerodynamic component, cost varies with design and material
-                'Third Brake Light': 100,  # Safety component, varies with design
-                'Tow Eye Cap': 30,  # Small component, part of the bumper assembly
-                'Upper Grille': 200,  # Depends on design and material
-                'Wheel': 200,  # Basic steel wheel, more for alloys or performance wheels
-                'Tyre': 150,  # Basic tyre, cost varies with size and brand
-                'Windshield': 400,  # Varies with sensor technology and vehicle model
-                'Wing': 300,  # Refers to the front fender, cost varies with material and design
-                'Airbag': 2000,  # Varies with technology and vehicle model
+                'Side Mirror': 300,
+                'Bonnet': 1000,
+                'Door Glass': 200,
+                'Door Handle': 200,
+                'Exhaust': 500,
+                'Front Bumper': 600,
+                'Front Door': 800,
+                'Headlamp': 400,
+                'Lower Grille': 150,
+                'Number Plate': 20,
+                'PDC Sensor': 150,
+                'Quarter Panel': 1500,
+                'Rear Bumper': 500,
+                'Rear Door': 800,
+                'Rear Emblem': 50,
+                'Rear Glass': 300,
+                'Rear Inner Lamp': 150,
+                'Rear Outer Lamp': 200,
+                'Rear Reflector': 50,
+                'Sill Panel': 600,
+                'Tailgate': 800,
+                'Tailgate Spoiler': 200,
+                'Third Brake Light': 100,
+                'Tow Eye Cap': 30,
+                'Upper Grille': 200,
+                'Wheel': 200,
+                'Tyre': 150,
+                'Windshield': 400,
+                'Wing': 300,
+                'Airbag': 2000,
                 'radiator support': 1000,
                 'condenser': 500,
                 'radiatior': 500,
@@ -110,39 +104,9 @@ def display_page():
                 'road test': 100,
                 'diagnostic trouble code': 100,
             }
-            part_names = [
-                'Side Mirror',
-                'Bonnet',
-                'Door Glass',
-                'Door Handle',
-                'Exhaust',
-                'Front Bumper',
-                'Front Door',
-                'Headlamp',
-                'Front Grille',
-                'Number Plate',
-                'PDC Sensor',
-                'Rear Quarter Panel',
-                'Rear Bumper',
-                'Rear Door',
-                'Rear Emblem',
-                'Rear Glass',
-                'Rear Inner Lamp',
-                'Rear Outer Lamp',
-                'Rear Reflector',
-                'Sill Panel',
-                'Tailgate',
-                'Tailgate Spoiler',
-                'Third Brake Light',
-                'Tow Eye Cap',
-                'Wheel',
-                'Tyre',
-                'Windshield',
-                'Front Wing',
-                'Roof',
-            ]
 
 
+            # Used for the one-shot prompt to GPT-4 for repair plan creation
             json_example = """
             Note: Before assessing damage from images, it's essential to distinguish between a vehicle's original body lines and damage-induced irregularities. Shadows and reflections can be deceptive and may not necessarily indicate damage. Knowing the vehicle's design is key to not mistaking design features for dents or creases. Always compare with the vehicle's standard lines to avoid misinterpretation caused by image lighting and angle effects. Normal gaps between panels must also be considered, as they may appear misaligned or damaged to the untrained eye.
             Note: Minor damage, repairable within an hour, is often indicated by light scratches or small dents where the panel's reflective quality remains uniform, and there are no alterations in panel gaps or paint texture. Damage requiring between 2-3 hours to repair can vary, but here are some things to look out for: Dents or creases where the shadows and usual contours of the panel are disrupted. "Spider-webbing" where the impact causes the paint to crack (more common on plastic parts like bumpers). Deeper scratches or scrapes where paint may be visibly missing. These damages might be repairable depending on the repair limits for the damaged panel. Repair work extending to 4-6 hours typically involves significant deformation of the panel with highly visible creases and distortion in reflections, along with paint that is visibly cracked or flaked. It is extremely important to observe the overall vehicle since what might appear to be distortion from damage may just be the body lines of the vehicle. Extensive damage that exceeds 6 hours is characterized by substantial panel gaps misalignment, severe creasing and deformation of the panel, and extensive areas of compromised paint, suggesting the need for complex structural repairs or complete panel replacement.
@@ -266,11 +230,8 @@ def display_page():
 
             """
 
-            def chunk_list(input_list, chunk_size):
-                """Split the input list into chunks of specified size."""
-                for i in range(0, len(input_list), chunk_size):
-                    yield input_list[i:i + chunk_size]
 
+            #encode images to base64 for GPT-4-Vision
             def encode_image(image_input):
                 # Check if the input is a file path (string) and the file exists
                 if isinstance(image_input, str) and os.path.isfile(image_input):
@@ -287,7 +248,7 @@ def display_page():
                 else:
                     raise ValueError("Unsupported input type for image encoding")
 
-
+            # Function to scale the costs based on the TradeRetail value, ideally we would use an API connection with parts suppliers
             def scale_costs(trade_retail_value, replacement_costs, scaling_base=4000, slow_scale_factor=0.02):
                 trade_retail_value = float(trade_retail_value)  # Convert TradeRetail value to a number
 
@@ -304,7 +265,7 @@ def display_page():
 
 
 
-            # Data Packages are "ValuationData" or "VehicleData"
+            # Data Packages are "ValuationData" or "VehicleData", this function fetches the data from the UK Vehicle Data API
 
             def fetch_and_save_data(VRM, DataPackage):
                 # Set Variables
@@ -370,6 +331,8 @@ def display_page():
                     ErrorContent = f'Status Code: {r.status_code}, Reason: {r.reason}'
                     print(ErrorContent)
 
+
+            # Function to send images to GPT-4-Vision
             def send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key):
                 #print(images)
                 #print(system_prompt)
@@ -424,6 +387,9 @@ def display_page():
                     responses.append({'error': 'Failed to process the image'})
                     return {"error": f"Request failed with status code {response.status_code}"}
 
+
+
+            # Function for natural language prompts only, can use GPT-3.5 or GPT-4
             def gpt_turbo_chat(model, system_prompt, user_prompt, openai_api_key):
                 headers = {
                     "Content-Type": "application/json",
@@ -657,6 +623,7 @@ def display_page():
 
             with st.spinner('Creating Repair Plan...'):
                 repair_plan = send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key)
+                st.write(repair_plan)
                 #st.write(repair_plan)
                 
                 # Remove any non-JSON compliant parts from the string (like Python comments)
@@ -669,13 +636,14 @@ def display_page():
 
                 if json_data.startswith('json'):
                     json_data = json_data[4:]  # Remove the first 4 characters 'json'
-                #st.write(json_data)
+                st.write(json_data)
 
                 try:
                     # Parse the JSON data
                     data = json.loads(json_data)
+                    st.write(data)
                 except json.JSONDecodeError as e:
-                    print (f"An error occurred: {e}")
+                    st.write(f"Failed to decode JSON: {e}")
 
                 job_card = f"Digital Job Card for Vehicle: {data['reg_no']}\n\n"
 
