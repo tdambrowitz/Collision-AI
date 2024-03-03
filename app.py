@@ -18,44 +18,77 @@ st.set_page_config(
     layout="wide"
 )
 
+# Function to load an image and convert it to a file-like object
+def load_image_as_file(image_path):
+    with open(image_path, "rb") as file:
+        return io.BytesIO(file.read())
+
+
+def set_example_values():
+    # Example values for inputs
+    example_vehicle_reg = "WN17HLD"
+    example_FNOL_description = "PH hit TPV in the rear on a roundabout. PH vehicle airbags have deployed, significant front end damage."
+
+    # Paths to your example images
+    example_image_paths = [
+        "Photo 2024-01-24 10-52-36.jpg",
+        "Photo 2024-01-24 10-52-52.jpg",
+        "Photo 2024-01-24 10-53-00.jpg"
+    ]
+
+    # Load images as file-like objects
+    example_images = [load_image_as_file(path) for path in example_image_paths]
+
+    # Set the values using Streamlit's session state
+    st.session_state['vehicle_reg'] = example_vehicle_reg
+    st.session_state['FNOL_description'] = example_FNOL_description
+    st.session_state['example_images'] = example_images
+
+def correct_image_orientation(image):
+    try:
+        for orientation in ExifTags.TAGS.keys():
+            if ExifTags.TAGS[orientation] == 'Orientation':
+                break
+        exif = dict(image._getexif().items())
+
+        if exif[orientation] == 3:
+            image = image.rotate(180, expand=True)
+        elif exif[orientation] == 6:
+            image = image.rotate(270, expand=True)
+        elif exif[orientation] == 8:
+            image = image.rotate(90, expand=True)
+    except (AttributeError, KeyError, IndexError):
+        # Cases: image doesn't have getexif
+        pass
+    return image
+
+
+
 # Streamlit Page
 def display_page():
 
     st.sidebar.header('Vehicle Damage Upload')
 
-    # Image upload
-    images = st.sidebar.file_uploader("Upload Damage Images", accept_multiple_files=True, type=['png', 'jpg', 'jpeg'])
-
-    def correct_image_orientation(image):
-        try:
-            for orientation in ExifTags.TAGS.keys():
-                if ExifTags.TAGS[orientation] == 'Orientation':
-                    break
-            exif = dict(image._getexif().items())
-
-            if exif[orientation] == 3:
-                image = image.rotate(180, expand=True)
-            elif exif[orientation] == 6:
-                image = image.rotate(270, expand=True)
-            elif exif[orientation] == 8:
-                image = image.rotate(90, expand=True)
-        except (AttributeError, KeyError, IndexError):
-            # Cases: image doesn't have getexif
-            pass
-        return image
-
-    # Display uploaded images in the sidebar
-    if images:
-        for uploaded_file in images:
-            image = Image.open(uploaded_file)
-            corrected_image = correct_image_orientation(image)
-            st.sidebar.image(corrected_image, caption='Uploaded Image', use_column_width=True)
+    # Add an example button in the sidebar
+    if st.sidebar.button('Load Example'):
+        set_example_values()
 
     # Vehicle information input
-    st.sidebar.header("Vehicle Information")
-    vehicle_reg = st.sidebar.text_input("Vehicle Registration Number")
-    FNOL_description = st.sidebar.text_area("First Notification of Loss Description")
-    
+    vehicle_reg = st.sidebar.text_input("Vehicle Registration Number", value=st.session_state.get('vehicle_reg', ''))
+    FNOL_description = st.sidebar.text_area("First Notification of Loss Description", value=st.session_state.get('FNOL_description', ''))
+
+    # Image upload
+    user_images = st.sidebar.file_uploader("Upload Damage Images", accept_multiple_files=True, type=['png', 'jpg', 'jpeg'], key="user_images")
+
+    if user_images:
+        st.session_state['user_images'] = user_images  # Store user-uploaded images in session state
+
+    # Display images (user-uploaded or example)
+    images = st.session_state.get('user_images', []) or st.session_state.get('example_images', [])
+    for img_file in images:
+        image = Image.open(img_file)
+        corrected_image = correct_image_orientation(image)
+        st.sidebar.image(corrected_image, caption='Uploaded Image', use_column_width=True)
 
     # Process images button
     if st.sidebar.button("Process Images"):
