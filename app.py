@@ -357,7 +357,7 @@ def display_page():
                     base64_images.extend(base64_example_images)
 
                 payload = {
-                    "model": "gpt-4-vision-preview",
+                    "model": "gpt-4-turbo",
                     "messages": [
                         {
                             "role": "system",
@@ -695,7 +695,7 @@ def display_page():
             system_prompt = "You must use the dictionary and repair plan to create the overall cost of the repair. Take your time and work through the problem to ensure you have the coorect cost."
             user_prompt = f"Provide the overall cost for the following repair plan: {repair_plan}\n Here is the dictionary of costs: {scaled_costs}. You must only use the full cost for replacement parts, if a part is repaired you should use half of the dictionary cost."
 
-            model = "gpt-4-turbo-preview"
+            model = "gpt-4-turbo"
             
             with st.spinner('Calculating Repair Costs...'):
                 costs = gpt_turbo_chat(model, system_prompt, user_prompt, openai_api_key)
