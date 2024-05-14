@@ -357,7 +357,7 @@ def display_page():
                     base64_images.extend(base64_example_images)
 
                 payload = {
-                    "model": "gpt-4-turbo",
+                    "model": "gpt-4o",
                     "messages": [
                         {
                             "role": "system",
