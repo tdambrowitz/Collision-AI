@@ -345,40 +345,66 @@ def display_page():
 
             # Function to send images to GPT-4-Vision
             def send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key):
-
                 headers = {
                     "Content-Type": "application/json",
                     "Authorization": f"Bearer {openai_api_key}"
                 }
 
-                base64_images = [encode_image(image) for image in images]
-                if example_images:
-                    base64_example_images = [encode_image(image) for image in example_images]
-                    base64_images.extend(base64_example_images)
+                messages = [
+                    {
+                        "role": "system",
+                        "content": system_prompt
+                    },
+                    {
+                        "role": "user",
+                        "content": []
+                    }
+                ]
+
+                if "[EXAMPLE_IMAGES_PLACEHOLDER]" in user_prompt:
+                    # Split the user_prompt into two parts
+                    prompt_parts = user_prompt.split("[EXAMPLE_IMAGES_PLACEHOLDER]")
+                    messages[-1]["content"].append({
+                        "type": "text",
+                        "text": prompt_parts[0].strip()
+                    })
+
+                    # Encode example images
+                    for image in example_images:
+                        base64_example_image = encode_image(image)
+                        messages[-1]["content"].append({
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_example_image}"
+                            }
+                        })
+
+                    messages[-1]["content"].append({
+                        "type": "text",
+                        "text": prompt_parts[1].strip()
+                    })
+                else:
+                    messages[-1]["content"].append({
+                        "type": "text",
+                        "text": user_prompt
+                    })
+
+                # Encode actual images
+                for image in images:
+                    base64_actual_image = encode_image(image)
+                    messages[-1]["content"].append({
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_actual_image}"
+                        }
+                    })
 
                 payload = {
                     "model": "gpt-4o",
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": system_prompt
-                        },
-                        {
-                            "role": "user",
-                            "content": [
-                                *[
-                                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image}"}} for image in base64_images
-                                ],
-                                {"type": "text", "text": user_prompt}
-                            ]
-                        }
-                    ],
+                    "messages": messages,
                     "max_tokens": 4000,
-                    "temperature" : 0
+                    "temperature": 0
                 }
-
-                # Initialize an empty list to store the responses
-                responses = []
 
                 response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=payload)
 
@@ -592,16 +618,21 @@ def display_page():
             """
 
             user_prompt = f"""
-            I am a qualified vehicle damage assessor and I will be evaluating your repair plan before it is used in any real world scenarios.
+            I am a qualified vehicle damage assessor and I will be evaluating your repair plan before it is used in any real-world scenarios.
             Below is an example of the JSON format to follow, this example has been created from the VW Golf in the first three images you will be shown.
+
+            [EXAMPLE_IMAGES_PLACEHOLDER]
+
             {json_example}
 
             Your task is to create a repair plan for the next vehicle you will be shown.
             {formatted_context}
-            Focus on damage you can clearly see. Explain waht you see and lay out your plan in the "damage_description" field. This entry in the JSON job card is there for you to show your work, so be as detailed as possible.
+            Focus on damage you can clearly see. Explain what you see and lay out your plan in the "damage_description" field. This entry in the JSON job card is there for you to show your work, so be as detailed as possible.
             Any missed items or operations will be deducted from your score, as will any unnecessary items. Use your understanding of current repair standards to guide you.
-            Remember, you lose more points for including unnecessary or incorrect items than you do for missing items. You are also penalised if you choose to replace a part that can be repaired.
+            Remember, you lose more points for including unnecessary or incorrect items than you do for missing items. You are also penalized if you choose to replace a part that can be repaired.
             Respond with only the structured JSON repair plan and nothing else.
+
+            [ACTUAL_IMAGES_PLACEHOLDER]
             """
 
             example_images = ["GOLF (1).jpg", "GOLF (4).jpg", "GOLF (7).jpg"]  # List of image file paths
