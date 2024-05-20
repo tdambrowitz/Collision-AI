@@ -409,13 +409,9 @@ def display_page():
                 response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=payload)
 
                 if response.status_code == 200:
-                    # Append successful response to the list
-                    responses.append(response.json()['choices'][0]['message']['content'])
                     return response.json()['choices'][0]['message']['content']
                 else:
-                    print("Failed to process the image")
-                    # Optionally append an error message or handle the error as needed
-                    responses.append({'error': 'Failed to process the image'})
+                    print("Failed to process the images")
                     return {"error": f"Request failed with status code {response.status_code}"}
 
 
