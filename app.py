@@ -258,22 +258,33 @@ def display_page():
 
             """
 
-            #encode images to base64 for GPT-4-Vision
+            # Function to encode images to base64 for GPT-4-Vision
             def encode_image(image_input):
                 # Check if the input is a file path (string) and the file exists
                 if isinstance(image_input, str) and os.path.isfile(image_input):
                     with open(image_input, "rb") as image_file:
-                        return base64.b64encode(image_file.read()).decode('utf-8')
+                        image = Image.open(image_file)
+                        return _encode_image_as_jpeg(image)
+            
                 # Check if the input is a Streamlit UploadedFile object
                 elif hasattr(image_input, 'getvalue'):  # Check if it's a BytesIO instance from an uploaded file
-                    return base64.b64encode(image_input.getvalue()).decode('utf-8')
+                    image = Image.open(io.BytesIO(image_input.getvalue()))
+                    return _encode_image_as_jpeg(image)
+            
                 # Check if the input is a PIL Image object
                 elif isinstance(image_input, Image.Image):
-                    buffered = io.BytesIO()
-                    image_input.save(buffered, format="JPEG")
-                    return base64.b64encode(buffered.getvalue()).decode('utf-8')
+                    return _encode_image_as_jpeg(image_input)
+            
                 else:
                     raise ValueError("Unsupported input type for image encoding")
+            
+            # Helper function to encode a PIL Image as JPEG and return a base64 string
+            def _encode_image_as_jpeg(image):
+                buffered = io.BytesIO()
+                # Ensure the image is in RGB format before saving as JPEG
+                image = image.convert('RGB')
+                image.save(buffered, format="JPEG")
+                return base64.b64encode(buffered.getvalue()).decode('utf-8')
                 
             # Function to scale the costs based on the TradeRetail value, ideally we would use an API connection with parts suppliers
             def scale_costs(trade_retail_value, replacement_costs, scaling_base=4000, slow_scale_factor=0.02):
