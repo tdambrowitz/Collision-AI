@@ -918,42 +918,42 @@ def display_page():
 
             #All done! Now time for shameless self promotion :D
 
-            # Path to the Halo ARC Logo
-            haloarc_logo_path = 'cropped_image_wider.jpg'  # Update this to the path where your QR code image is stored
+            ## Path to the Halo ARC Logo
+            #haloarc_logo_path = 'cropped_image_wider.jpg'  # Update this to the path where your QR code image is stored
 
             # Path to the QR code image
-            qr_code_image_path = 'haloarc_job_link_qr.png'  # Update this to the path where your QR code image is stored
+            #qr_code_image_path = 'haloarc_job_link_qr.png'  # Update this to the path where your QR code image is stored
 
             # Create a 3-column layout (left, center, right)
-            col1, col2 = st.columns([1,1])
+            #col1, col2 = st.columns([1,1])
             
-            with col1:
-                st.image(haloarc_logo_path, caption="", use_column_width=True)
+            #with col1:
+                #st.image(haloarc_logo_path, caption="", use_column_width=True)
 
             # Use the middle column to display the QR code centered
-            with col2:
+            #with col2:
                 # Centering the image in the column
-                st.image(qr_code_image_path, use_column_width=True)
+                #st.image(qr_code_image_path, use_column_width=True)
 
 
             # Use Markdown with HTML to customize the caption text
-            st.markdown("""
-                <style>
-                .big-font {
-                    font-size:20px;  # Increased font size for better readability
-                    font-weight:bold;  # Keeps the text bold for emphasis
-                    line-height:1.5;  # Adds more space between lines for easier reading
-                }
-                .center-text {
-                    text-align: center;  # Ensures text is centered
-                    margin-top: 20px;  # Adds space above the text block for better layout
-                    margin-bottom: 20px;  # Adds space below the text block for better layout
-                }
-                </style>
-                <div class='center-text'>
-                    <p class='big-font'>Join me in revolutionising a neglected industry!<br>We're looking for talented people with that special Spark!</p>
-                </div>    
-                """, unsafe_allow_html=True)
+            #st.markdown("""
+                #<style>
+                #.big-font {
+                    #font-size:20px;  # Increased font size for better readability
+                    #font-weight:bold;  # Keeps the text bold for emphasis
+                    #line-height:1.5;  # Adds more space between lines for easier reading
+                #}
+                #.center-text {
+                    #text-align: center;  # Ensures text is centered
+                    #margin-top: 20px;  # Adds space above the text block for better layout
+                    #margin-bottom: 20px;  # Adds space below the text block for better layout
+                #}
+                #</style>
+                #<div class='center-text'>
+                    #<p class='big-font'>Join me in revolutionising a neglected industry!<br>We're looking for talented people with that special Spark!</p>
+                #</div>    
+                #""", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
