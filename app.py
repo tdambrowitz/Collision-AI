@@ -88,7 +88,7 @@ def display_page():
     for img_file in images:
         image = Image.open(img_file)
         corrected_image = correct_image_orientation(image)
-        st.sidebar.image(corrected_image, caption='Uploaded Image', use_column_width=True)
+        st.sidebar.image(corrected_image, caption='Uploaded Image', use_container_width=True)
 
     # Process images button
     if st.sidebar.button("Process Images"):
@@ -928,12 +928,12 @@ def display_page():
             #col1, col2 = st.columns([1,1])
             
             #with col1:
-                #st.image(haloarc_logo_path, caption="", use_column_width=True)
+                #st.image(haloarc_logo_path, caption="", use_container_width=True)
 
             # Use the middle column to display the QR code centered
             #with col2:
                 # Centering the image in the column
-                #st.image(qr_code_image_path, use_column_width=True)
+                #st.image(qr_code_image_path, use_container_width=True)
 
 
             # Use Markdown with HTML to customize the caption text
