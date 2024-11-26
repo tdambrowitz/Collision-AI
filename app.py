@@ -301,58 +301,33 @@ def display_page():
                 scaled_costs = {item: cost * scale_factor for item, cost in replacement_costs.items()}
                 return scaled_costs
 
-            # Data Packages are "ValuationData" or "VehicleData", this function fetches the data from the UK Vehicle Data API
+            # Function to fetch data (mocked with given API responses)
             def fetch_and_save_data(VRM, DataPackage):
-                # Create payload dictionary
-                Payload = {
-                    "v": 2,  # Package version
-                    "api_nullitems": 1,  # Return null items
-                    "key_vrm": VRM,  # Vehicle registration mark
-                    "auth_apikey": vehicle_data_api_key  # Set the API Key
-                }
-
-                # Create GET Request (Include payload & headers)
-                r = requests.get(f'https://uk1.ukvehicledata.co.uk/api/datapackage/{DataPackage}', params=Payload)
-
-                # Check for a successful response
-                if r.status_code == requests.codes.ok:
-                    # Response JSON Object
-                    ResponseJSON = r.json()
-
-                    # Extract specific details if DataPackage is ValuationData
-                    if DataPackage == "ValuationData":
-                        # Navigate through the JSON to extract the required information
-                        extracted_data = {
-                            "TradeRetail": ResponseJSON["Response"]["DataItems"]["ValuationList"]["TradeRetail"],
-                            "StatusCode": ResponseJSON["Response"]["StatusCode"],
-                            "Mileage": ResponseJSON["Response"]["DataItems"]["Mileage"],
-                            "PlateYear": ResponseJSON["Response"]["DataItems"]["PlateYear"],
-                            "VehicleDescription": ResponseJSON["Response"]["DataItems"]["VehicleDescription"]
-                        }
-
-                        return extracted_data
-                    
-                    if DataPackage == "VehicleData":
-                        # Navigate through the JSON to extract the required information
-                        extracted_data = {
-                            "StatusCode": ResponseJSON["Response"]["StatusCode"],
-                            "NumberOfDoors": ResponseJSON["Response"]["DataItems"]["TechnicalDetails"]["Dimensions"]["NumberOfDoors"],
-                            "KerbWeight": ResponseJSON["Response"]["DataItems"]["TechnicalDetails"]["Dimensions"]["KerbWeight"],
-                            "Model": ResponseJSON["Response"]["DataItems"]["ClassificationDetails"]["Dvla"]["Model"],
-                            "Make": ResponseJSON["Response"]["DataItems"]["ClassificationDetails"]["Dvla"]["Make"],
-                            "IsElectricVehicle": ResponseJSON["Response"]["DataItems"]["ClassificationDetails"]["Ukvd"]["IsElectricVehicle"],
-                            "YearOfManufacture": ResponseJSON["Response"]["DataItems"]["VehicleRegistration"]["YearOfManufacture"],
-                            "Transmission": ResponseJSON["Response"]["DataItems"]["VehicleRegistration"]["Transmission"],
-                            "FuelType": ResponseJSON["Response"]["DataItems"]["VehicleRegistration"]["FuelType"],
-                            "BodyStyle": ResponseJSON["Response"]["DataItems"]["SmmtDetails"]["BodyStyle"]
-                        }
-
-                        return extracted_data
-
+                if DataPackage == "ValuationData":
+                    # Pre-loaded response for ValuationData
+                    return {
+                        "TradeRetail": 11210,
+                        "StatusCode": "Success",
+                        "Mileage": "82,225",
+                        "PlateYear": "2017-17",
+                        "VehicleDescription": "BMW 320D SPORT GT AUTO"
+                    }
+                elif DataPackage == "VehicleData":
+                    # Pre-loaded response for VehicleData
+                    return {
+                        "StatusCode": "Success",
+                        "NumberOfDoors": 5,
+                        "KerbWeight": 1595,
+                        "Model": "320D SPORT GT AUTO",
+                        "Make": "BMW",
+                        "IsElectricVehicle": False,
+                        "YearOfManufacture": "2017",
+                        "Transmission": "AUTO 8 GEARS",
+                        "FuelType": "DIESEL",
+                        "BodyStyle": "Hatchback"
+                    }
                 else:
-                    # Request was not successful
-                    ErrorContent = f'Status Code: {r.status_code}, Reason: {r.reason}'
-                    print(ErrorContent)
+                    return None
 
             # Function to send images to GPT-4-Vision
             def send_images_to_gpt4(example_images, images, system_prompt, user_prompt, openai_api_key):
